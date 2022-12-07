@@ -11,39 +11,43 @@ import { ImageData } from './interfaces/imageData'
 
 const GOLDENRATIO = 1.61803398875
 
-export const App = ({ images }: { images: Array<ImageData> }) => {
-  
-  // const darkerBurgundy ='#541220'
-  const blighterBurgundy  = '#722D32'
+// const darkerBurgundy ='#541220'
+const blighterBurgundy = '#722D32'
 
-  const backgroundColor = blighterBurgundy
+const backgroundColor = blighterBurgundy
+export const App = ({ images }: { images: Array<ImageData> }) => {
+  return (
+    <Canvas dpr={[1, 1.5]} camera={{ fov: 70, position: [0, 2, 15], rotation: [Math.PI * (1 / 2), 0, 0] }}
+
   
-  return(
-  <Canvas dpr={[1, 1.5]} camera={{ fov: 70, position: [0, 2, 15] }}>
-    <color attach="background" args={[backgroundColor]} />
-    <fog attach="fog" args={[backgroundColor, 0, 15]} />
-    <group position={[0, -0.5, 0]}>
-      <Frames images={images} />
-      <mesh rotation={[-Math.PI / 2, 0, 0]}>
-        <planeGeometry args={[50, 50]} />
-        <MeshReflectorMaterial
-          blur={[300, 100]}
-          resolution={2048}
-          mixBlur={1}
-          mixStrength={50}
-          roughness={1}
-          depthScale={1.2}
-          minDepthThreshold={0.4}
-          maxDepthThreshold={1.4}
-          color="#050505"
-          metalness={0.5}
-          mirror={0}
-        />
-      </mesh>
-    </group>
-    <Environment preset="city" />
-  </Canvas>
-)}
+>
+      <color attach="background" args={[backgroundColor]} />
+      <fog attach="fog" args={[backgroundColor, 0, 15]} />
+
+      <MyImage raycast={() => null} scale={3}  position={[0, 5, 14.5]} rotation={[Math.PI/2,0,0]} url={'/title.png'} transparent={true}  zoom={0.85}/>
+      <group position={[0, -0.5, 0]}>
+        <Frames images={images} />
+        <mesh rotation={[-Math.PI / 2, 0, 0]}>
+          <planeGeometry args={[50, 50]} />
+          <MeshReflectorMaterial
+            blur={[300, 100]}
+            resolution={2048}
+            mixBlur={1}
+            mixStrength={50}
+            roughness={1}
+            depthScale={1.2}
+            minDepthThreshold={0.4}
+            maxDepthThreshold={1.4}
+            color="#050505"
+            metalness={0.5}
+            mirror={0}
+          />
+        </mesh>
+      </group>
+      <Environment preset="city" />
+    </Canvas>
+  )
+}
 
 function Frames({ images, q = new THREE.Quaternion(), p = new THREE.Vector3() }: { images: Array<ImageData>; q?: THREE.Quaternion; p?: THREE.Vector3 }) {
   const ref = useRef(null)
@@ -65,9 +69,12 @@ function Frames({ images, q = new THREE.Quaternion(), p = new THREE.Vector3() }:
       q.identity()
     }
   })
+  const startSec = 2.5
   useFrame((state, dt) => {
-    easing.damp3(state.camera.position, p, 0.4, dt, 3)
-    easing.dampQ(state.camera.quaternion, q, 0.4, dt, 3)
+    if (state.clock.getElapsedTime() > startSec) {
+      easing.damp3(state.camera.position, p, 0.4, dt, 3)
+      easing.dampQ(state.camera.quaternion, q, 0.4, dt, 0.5)
+    }
   })
   return (
     <group
@@ -86,7 +93,7 @@ function Frame({ url, c = new THREE.Color(), ...props }: { url: string; c?: THRE
   const [hovered, hover] = useState(false)
   // const [rnd] = useState(() => Math.random())
   const caption = props.caption
-  const name =  getUuid(url + caption)
+  const name = getUuid(url + caption)
   const isActive = params?.id === name
   useCursor(hovered)
   useFrame((state, dt) => {
@@ -98,7 +105,7 @@ function Frame({ url, c = new THREE.Color(), ...props }: { url: string; c?: THRE
     // @ts-ignore
     easing.damp3(image.current?.scale, [0.85 * (!isActive && hovered ? 0.85 : 1), 0.9 * (!isActive && hovered ? 0.905 : 1), 1], 0.1, dt, 3)
     // @ts-ignore
-    easing.dampC(frame?.current.material.color, hovered ? 'orange' : 'white', 0.1, dt, 3)
+    easing.dampC(frame?.current.material.color, hovered ? blighterBurgundy : 'white', 0.1, dt, 3)
   })
 
   useEffect(() => {
