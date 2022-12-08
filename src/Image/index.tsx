@@ -121,6 +121,7 @@ const ImageBase = React.forwardRef(
 
 const ImageWithUrl = React.forwardRef(({ url, ...props }: ImageProps, ref: React.ForwardedRef<THREE.Mesh>) => {
   const texture = useTexture(url!)
+  texture.minFilter = THREE.LinearMipmapLinearFilter
   return <ImageBase {...props} texture={texture} ref={ref} />
 })
 

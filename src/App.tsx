@@ -1,13 +1,14 @@
 import * as THREE from 'three'
 import { useEffect, useRef, useState } from 'react'
 import { Canvas, useFrame } from '@react-three/fiber'
-import { useCursor, MeshReflectorMaterial, Text, Environment } from '@react-three/drei'
+import { useCursor, MeshReflectorMaterial, Text, Environment, OrbitControls } from '@react-three/drei'
 import { useRoute, useLocation } from 'wouter'
 import { easing } from 'maath'
 import * as getUuid from 'uuid-by-string'
 import { Image as MyImage } from './Image'
 import * as React from 'react'
 import { ImageData } from './interfaces/imageData'
+import { Vector2 } from 'three'
 
 const GOLDENRATIO = 1.61803398875
 
@@ -25,6 +26,8 @@ export const App = ({ images }: { images: Array<ImageData> }) => {
       <fog attach="fog" args={[backgroundColor, 0, 15]} />
 
       <MyImage raycast={() => null} scale={3}  position={[0, 5, 14.5]} rotation={[Math.PI/2,0,0]} url={'/title.png'} transparent={true}  zoom={0.85}/>
+
+      {/* <OrbitControls enablePan={false} enableZoom={false} enableRotate={true} /> */}
       <group position={[0, -0.5, 0]}>
         <Frames images={images} />
         <mesh rotation={[-Math.PI / 2, 0, 0]}>
@@ -65,7 +68,7 @@ function Frames({ images, q = new THREE.Quaternion(), p = new THREE.Vector3() }:
       // @ts-ignore
       clicked.current.parent.getWorldQuaternion(q)
     } else {
-      p.set(0, 0, 5.5)
+      p.set(0, 0, 2.5)
       q.identity()
     }
   })
@@ -73,7 +76,7 @@ function Frames({ images, q = new THREE.Quaternion(), p = new THREE.Vector3() }:
   useFrame((state, dt) => {
     if (state.clock.getElapsedTime() > startSec) {
       easing.damp3(state.camera.position, p, 0.4, dt, 3)
-      easing.dampQ(state.camera.quaternion, q, 0.4, dt, 0.5)
+      easing.dampQ(state.camera.quaternion, q, 0.4, dt, 0.3)
     }
   })
   return (
@@ -101,7 +104,11 @@ function Frame({ url, c = new THREE.Color(), ...props }: { url: string; c?: THRE
     // @ts-ignore
     image.current.geometry.parameters.height = GOLDENRATIO
     // @ts-ignore
-    image.current.material.zoom = 1.5 + Math.sin((Math.PI * 3) / 2 + state.clock.elapsedTime / 3) / 2
+    // image.current.material.zoom = 1.5 + Math.sin((Math.PI * 3) / 2 + state.clock.elapsedTime / 3) / 2
+    // @ts-ignore
+    image.current.material.map.offset = new Vector2(10000,1);
+    // @ts-ignore
+    console.log(image.current.material.map)
     // @ts-ignore
     easing.damp3(image.current?.scale, [0.85 * (!isActive && hovered ? 0.85 : 1), 0.9 * (!isActive && hovered ? 0.905 : 1), 1], 0.1, dt, 3)
     // @ts-ignore
@@ -112,8 +119,6 @@ function Frame({ url, c = new THREE.Color(), ...props }: { url: string; c?: THRE
     if (image.current) {
       // @ts-ignore
       image.current.geometry.parameters.height = GOLDENRATIO
-      console.log(image.current)
-      console.log(image.current)
     }
   }, [image?.current])
   return (
@@ -137,4 +142,5 @@ function Frame({ url, c = new THREE.Color(), ...props }: { url: string; c?: THRE
       </Text>
     </group>
   )
+
 }
